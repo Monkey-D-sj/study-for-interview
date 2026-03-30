@@ -15,6 +15,7 @@ class DbDependencies:
     def connect(self, redis: Redis):
         self.redis = redis
         self.checkpointer = get_redis_checkpointer(redis)
+        self.checkpointer.setup()
 
     def get_checkpointer(self) -> Checkpointer:
         return self.checkpointer

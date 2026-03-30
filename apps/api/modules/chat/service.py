@@ -10,7 +10,7 @@ class ChatService:
 	def __init__(self, checkpointer: Checkpointer):
 		self.checkpointer = checkpointer
 
-	def interview_intend(self, user_input: str, session_id: str):
+	def interview_intend(self, user_input: str, session_id: str = None, resume: bool = False):
 		"""
 		询问面试者的意图
 		"""
@@ -20,7 +20,8 @@ class ChatService:
 		for chunk in run_teacher_agent(
 			user_input,
 			self.checkpointer,
-			session_id
+			session_id,
+			resume=resume
 		):
 			yield ServerSentEvent(data={
 				"type": "content",

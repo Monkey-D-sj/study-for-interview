@@ -14,13 +14,13 @@ chat_router = APIRouter(
 @chat_router.post("/interview", response_class=EventSourceResponse)
 async def interview_intend(
 	request: InterviewChatRequest,
-	session_id: str = Header(None, description="会话ID"),
 	checkpointer = Depends(db_dependencies.get_checkpointer),
 ):
 	service = ChatService(checkpointer)
 	for chunk in service.interview_intend(
 			request.user_input,
-			session_id
+			request.session_id,
+			request.resume
 		):
 		yield chunk
 

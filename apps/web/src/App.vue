@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ElCard, ElInput, ElButton } from 'element-plus';
+import { ElInput, ElButton } from 'element-plus';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -10,13 +10,22 @@ interface Message {
 const messages = ref<Message[]>([])
 const input = ref('')
 
+const session_id = ref(Math.random().toString(36).substring(2))
+console.log(session_id.value);
+
+
+
 const sendMessage = async () => {
   const res = await fetch('http://localhost:8000/chat/interview', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ user_input: input.value }),
+    body: JSON.stringify({
+      user_input: input.value,
+      session_id: session_id.value,
+      resume: messages.value.length > 0
+    }),
   });
   if (!res.ok) {
     throw new Error('Failed to fetch');
@@ -37,6 +46,8 @@ const sendMessage = async () => {
     const jsonStr = decoded.match(/data: (.*)/)?.[1];
     if (jsonStr) {
       const data = JSON.parse(jsonStr);
+      console.log(data.message);
+
       chunk += data.message;
       messages.value[messages.value.length - 1].content = chunk;
     }

@@ -2,29 +2,34 @@ from typing import  Any, Generator
 from langchain_core.runnables import RunnableConfig
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
+from langgraph.prebuilt import ToolNode
 from langgraph.types import Checkpointer, Command
 from langgraph.typing import InputT
 
 from packages.agents.teacher.nodes.intend import \
-    intend_node, finish_intend
+    intend_node, finish_intend, ask_user
 from packages.agents.teacher.nodes.practice import practice
 from packages.agents.teacher.nodes.evaluate import evaluate
 from packages.agents.teacher.state import TeacherState
 
+
+intend_tools = ToolNode([ask_user])
 workflow = StateGraph(TeacherState)
 
 (workflow
  .add_node(intend_node)
  .add_node(evaluate)
  .add_node(practice)
+ .add_node("intend_tools", intend_tools)
  .add_edge(START, "intend_node")
  # .add_edge("intend_node", "practice")
  # .add_edge("practice", "evaluate")
  # .add_edge("evaluate", END)
  .add_conditional_edges("intend_node", finish_intend, {
     "continue": END,
-    "loop": "intend_node"
+    "loop": "intend_tools"
 })
+ .add_edge("intend_tools", "intend_node")
 )
 
 def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: str = "", resume: bool = False):
@@ -33,11 +38,13 @@ def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: st
             "thread_id": thread_id
         }
     }
+    print(resume)
     teacher_agent = workflow.compile(checkpointer=checkpointer)
     agent_input: InputT | Command = Command(resume=user_input) if resume else {"user_input": user_input}
 
     response = teacher_agent.invoke(agent_input, config=config)
-    print('response', response)
+    if '__interrupt__' in response:
+        yield response['__interrupt__'][0].value
     return response
 
     # for chunk in teacher_agent.stream(

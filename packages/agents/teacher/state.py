@@ -14,4 +14,4 @@ class TeacherState(TypedDict):
     answer: str # 回答
     evaluation: str # 评估
 
-    history: Annotated[List[AnyMessage], add_messages]
+    messages: Annotated[List[AnyMessage], add_messages]
