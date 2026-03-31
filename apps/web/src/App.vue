@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
 import { ElInput, ElButton } from 'element-plus'
+import MarkdownIt from 'markdown-it'
 
 interface Message {
   role: 'user' | 'assistant';
@@ -25,6 +26,14 @@ const scheduleScrollToBottom = () => {
     el.scrollTop = el.scrollHeight
   })
 }
+
+const md = new MarkdownIt({
+  html: false,
+  linkify: true,
+  breaks: true,
+})
+
+const renderMarkdown = (source: string) => md.render(source)
 
 const sendMessage = async () => {
   const trimmed = input.value.trim()
@@ -98,9 +107,9 @@ const sendMessage = async () => {
           <div class="msg-meta">
             {{ message.role === 'user' ? '你' : 'AI' }}
           </div>
-          <div class="msg-content">
-            {{ message.content }}
-          </div>
+          <div v-if="message.role === 'assistant'" class="msg-content markdown"
+            v-html="renderMarkdown(message.content)" />
+          <div v-else class="msg-content">{{ message.content }}</div>
         </div>
       </div>
     </main>
@@ -215,6 +224,98 @@ const sendMessage = async () => {
   word-break: break-word;
   color: var(--text-h);
   line-height: 150%;
+}
+
+.msg-content.markdown {
+  white-space: normal;
+}
+
+.markdown :deep(p) {
+  margin: 0 0 10px;
+}
+
+.markdown :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.markdown :deep(ul),
+.markdown :deep(ol) {
+  margin: 0 0 10px;
+  padding-left: 20px;
+}
+
+.markdown :deep(li) {
+  margin: 4px 0;
+}
+
+.markdown :deep(blockquote) {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent-border);
+  background: color-mix(in srgb, var(--bg), transparent 18%);
+  border-radius: 10px;
+}
+
+.markdown :deep(a) {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.markdown :deep(h1),
+.markdown :deep(h2),
+.markdown :deep(h3) {
+  margin: 12px 0 8px;
+  color: var(--text-h);
+}
+
+.markdown :deep(pre) {
+  margin: 10px 0;
+  padding: 12px 12px;
+  border-radius: 12px;
+  overflow: auto;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+}
+
+.markdown :deep(pre code) {
+  display: block;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.markdown :deep(:not(pre) > code) {
+  display: inline;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+}
+
+.markdown :deep(hr) {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+
+.markdown :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.markdown :deep(th),
+.markdown :deep(td) {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.markdown :deep(tr:last-child td) {
+  border-bottom: none;
 }
 
 .chat-composer {

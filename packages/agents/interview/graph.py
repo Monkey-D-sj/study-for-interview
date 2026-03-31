@@ -70,8 +70,5 @@ def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: st
         else:
             if "__interrupt__" in data:
                 yield data["__interrupt__"][0].value
-            else:
-                yield data
-
 
 

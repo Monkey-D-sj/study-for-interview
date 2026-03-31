@@ -1,7 +1,7 @@
 import json
 from pydantic import Field, BaseModel
 from langchain_core.messages import SystemMessage, \
-    HumanMessage, ToolMessage
+    HumanMessage, ToolMessage, AIMessage
 from langgraph.config import get_stream_writer
 
 from packages.agents.interview.model import get_teacher_model
@@ -58,19 +58,34 @@ def intend_node(state: TeacherState) -> TeacherState:
     writer = get_stream_writer()
 
     # 收集完整的响应
-    response = model_with_tools.invoke(messages)
-    messages.append(response)
+    tool_call = {
+        "name": "ask_user",
+        "args": "",
+        "id": "",
+    }
+    content = ""
+    for chunk in model_with_tools.stream(messages):
+        print(chunk)
+        content += chunk.content
+        if chunk.tool_call_chunks:
+            tool_call_chunk = chunk.tool_call_chunks[0]
+            if tool_call_chunk["id"]:
+                tool_call["id"] = tool_call_chunk["id"]
+            if tool_call_chunk["args"]:
+                tool_call["args"] += tool_call_chunk["args"]
+    print(tool_call)
+    messages.append(AIMessage(content=content, tool_calls=[tool_call]))
     state["messages"] = messages
-    if response.tool_calls:
-        tool_call = response.tool_calls[0]
-        args = tool_call['args']
 
+    if tool_call['args']:
+        args = json.loads(tool_call['args'])
         if args["is_finish"]:
             state["user_name"] = args["user_name"]
             state["position"] = args["position"]
             state["level"] = args["level"]
             # 清空消息列表
             state["messages"] = []
+            writer("那我们进入面试流程吧")
 
     return state
 
