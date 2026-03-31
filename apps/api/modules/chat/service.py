@@ -3,7 +3,7 @@ import uuid
 from fastapi.sse import ServerSentEvent
 from langgraph.types import Checkpointer
 
-from packages.agents.teacher.graph import run_teacher_agent
+from packages.agents.interview.graph import run_teacher_agent
 
 
 class ChatService:
