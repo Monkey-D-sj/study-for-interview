@@ -1,4 +1,7 @@
 import json
+from typing import Optional
+
+from langgraph.types import interrupt
 from pydantic import Field, BaseModel
 from langchain_core.messages import SystemMessage, \
     HumanMessage, ToolMessage, AIMessage
@@ -6,91 +9,75 @@ from langgraph.config import get_stream_writer
 
 from packages.agents.interview.model import get_teacher_model
 from packages.agents.interview.state import TeacherState
-from langchain_core.tools import tool
-from langgraph.types import interrupt
-
-
-class AskUserTool(BaseModel):
-    question: str = Field(description="要询问的问题")
-    is_finish: bool = Field(description="是否结束对话")
-    level: str = Field(description="面试职级")
-    position: str = Field(description="面试岗位")
-    user_name: str = Field(description="面试者姓名")
-
-@tool(args_schema=AskUserTool)
-def ask_user_for_intend(question: str, is_finish: bool, level: str, position: str, user_name: str) -> str:
-    """
-    向面试者提出一个问题
-    """
-    if is_finish:
-        return f"收集完毕：姓名={user_name}, 岗位={position}, 职级={level}"
-    print('ask_user question:', question)
-    answer = interrupt(question)
-    print('ask_user answer:', answer)
-    return answer
 
 intend_system_prompt = """
-你是一个HR，擅长通过语言引导面试者，了解面试者的面试信息。可以通过用户输入来获取信息
+你是一个专业的HR，正在引导面试者填写信息。
 
-你必须严格按照以下规范进行操作：
-- 只能通过**ask_user** 工具，来询问面试者信息
-- 你必须获取以下三项信息，顺序为：
-    - 面试者姓名
-    - 面试岗位
-    - 面试职级
-- 当三项信息全部获取后，调用 ask_user 并设置 is_finish=True，同时填入 user_name、position、level
+目标：收集以下信息：
+1. 姓名（user_name）
+2. 面试岗位（position）
+3. 面试职级（level）
+
+规则：
+- 你可以从用户输入中“提取已有信息”
+- 如果信息缺失，需要自然地向用户提问
+- 语气要像真人HR，简洁自然
 """
 
 def intend_node(state: TeacherState) -> TeacherState:
     """
     询问面试者的意图
     """
-    messages = state.get("messages", [])
-    if not messages:
-        messages = [
-            SystemMessage(content=intend_system_prompt),
-        ]
-    if state.get("user_input") and not state.get("messages"):
-        messages.append(HumanMessage(content=state["user_input"]))
+    context = f"""
+当前已知消息：
+- 姓名：{state.get("user_name", "")}
+- 面试岗位：{state.get("position", "")}
+- 面试职级：{state.get("level", "")}
+"""
+    messages = [
+        SystemMessage(content=intend_system_prompt),
+        HumanMessage(content=context)
+    ]
 
-    model_with_tools = get_teacher_model().bind_tools([ask_user_for_intend])
+    model = get_teacher_model()
+    response = model.invoke(messages)
+    question = response.content
 
-    writer = get_stream_writer()
-
-    # 收集完整的响应
-    tool_call = {
-        "name": "ask_user",
-        "args": "",
-        "id": "",
+    return {
+        "hr_question": question
     }
-    content = ""
-    for chunk in model_with_tools.stream(messages):
-        print(chunk)
-        content += chunk.content
-        if chunk.tool_call_chunks:
-            tool_call_chunk = chunk.tool_call_chunks[0]
-            if tool_call_chunk["id"]:
-                tool_call["id"] = tool_call_chunk["id"]
-            if tool_call_chunk["args"]:
-                tool_call["args"] += tool_call_chunk["args"]
-    print(tool_call)
-    messages.append(AIMessage(content=content, tool_calls=[tool_call]))
-    state["messages"] = messages
 
-    if tool_call['args']:
-        args = json.loads(tool_call['args'])
-        if args["is_finish"]:
-            state["user_name"] = args["user_name"]
-            state["position"] = args["position"]
-            state["level"] = args["level"]
-            # 清空消息列表
-            state["messages"] = []
-            writer("那我们进入面试流程吧")
+class IntendStructuredOutput(BaseModel):
+    user_name: Optional[str] = None
+    position: Optional[str] = None
+    level: Optional[str] = None
 
-    return state
+def intend_input_node(state: TeacherState):
+    answer = interrupt("")
+    prompt = f"""
+    请从问题{state["hr_question"]}评估回答{answer}是否是下面三个字段：
+    1. 姓名（user_name）
+    2. 面试岗位（position）
+    3. 面试职级（level）
+    如果有返回数据，没有就不返回
+    """
+    response = get_teacher_model().with_structured_output(IntendStructuredOutput).invoke([
+        HumanMessage(content=prompt)
+    ])
+
+    if response.user_name:
+        state["user_name"] = response.user_name
+    if response.position:
+        state["position"] = response.position
+    if response.level:
+        state["level"] = response.level
+
+    return {}
 
 def finish_intend(state: TeacherState) -> str:
     if state.get("user_name") and state.get("position") and state.get("level"):
+        writer = get_stream_writer()
+        writer(f"欢迎{state["user_name"]}来面试{state["position"]}，那我们进入面试流程吧")
         return "continue"
     return "loop"
 

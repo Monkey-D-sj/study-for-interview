@@ -1,18 +1,19 @@
 from typing import TypedDict, Literal, List, Annotated, \
-    TypeAlias, Union
+    TypeAlias, Union, Optional
 from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage
 
 class TeacherState(TypedDict):
     user_input: Annotated[str, lambda x, y: y] # 用户输入
-    user_name: str # 用户姓名
-    position: str # 用户职位
+    hr_question: Optional[str] # hr问题
+    user_name: Optional[str] # 用户姓名
+    position: Optional[str] # 用户职位
     level: Literal["beginner", "intermediate", "advanced"]
-    topic: str # 话题
+    topic: Optional[str] # 话题
 
-    question: str # 问题
-    standard_answer: str # 标准答案
-    answer: str # 用户回答
-    score: int # 评估分数
+    question: Optional[str] # 问题
+    standard_answer: Optional[str] # 标准答案
+    answer: Optional[str] # 用户回答
+    score: Optional[int] # 评估分数
 
     messages: Annotated[List[AnyMessage], add_messages]

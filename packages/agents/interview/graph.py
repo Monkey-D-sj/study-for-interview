@@ -1,4 +1,7 @@
 from typing import  Any, Generator
+
+from langchain_core.messages import AIMessage, \
+    AIMessageChunk
 from langchain_core.runnables import RunnableConfig
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
@@ -9,27 +12,25 @@ from langgraph.typing import InputT
 from packages.agents.interview.nodes.examiner import \
     examiner, collect_answer
 from packages.agents.interview.nodes.intend import \
-    intend_node, finish_intend, ask_user_for_intend
+    intend_node, finish_intend, intend_input_node
 from packages.agents.interview.nodes.evaluate import \
     evaluate, evaluate_pass
 from packages.agents.interview.state import TeacherState
 
-
-intend_tools = ToolNode([ask_user_for_intend])
 workflow = StateGraph(TeacherState)
 
 (workflow
  .add_node(intend_node)
+ .add_node(intend_input_node)
  .add_node(examiner)
  .add_node(collect_answer)
  .add_node(evaluate)
- .add_node("intend_tools", intend_tools)
  .add_edge(START, "intend_node")
- .add_conditional_edges("intend_node", finish_intend, {
+ .add_edge("intend_node", "intend_input_node")
+ .add_conditional_edges("intend_input_node", finish_intend, {
     "continue": "examiner",
-    "loop": "intend_tools"
+    "loop": "intend_node"
 })
- .add_edge("intend_tools", "intend_node")
  .add_edge("examiner", "collect_answer")
  .add_edge("collect_answer", "evaluate")
  .add_conditional_edges("evaluate", evaluate_pass, {
@@ -60,15 +61,26 @@ def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: st
     for chunk in teacher_agent.stream(
             agent_input,
             config=config,
-            stream_mode=["updates", "custom"],
+            stream_mode=["updates", "custom", "messages"],
             version="v2"
     ):
-        print(chunk)
         data = chunk["data"]
         if chunk["type"] == "custom":
-            yield chunk["data"]
+            print('custom', data)
+            yield data
+        elif chunk["type"] == "messages":
+            message_chunk, metadata = data
+            # print(message_chunk, metadata)
+            # print('\n')
+            if isinstance(message_chunk, AIMessageChunk):
+                print(message_chunk)
+            if message_chunk.content:
+                print('messages', message_chunk.content)
+                yield message_chunk.content
+
         else:
             if "__interrupt__" in data:
+                print('interrupt', data["__interrupt__"][0].value)
                 yield data["__interrupt__"][0].value
 
 

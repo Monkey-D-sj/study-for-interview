@@ -1,6 +1,8 @@
 from typing import Union, Dict, List
 
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.output_parsers import \
+    JsonOutputToolsParser
 
 from langchain_core.prompts import ChatPromptTemplate, \
     SystemMessagePromptTemplate
@@ -11,7 +13,10 @@ from packages.agents.interview.model import get_teacher_model
 from packages.agents.interview.state import TeacherState
 
 practice_system_prompt = """
-你是一个资深{position}面试官，需要你根据岗位{level}等级，出一道题给面试者，并给出标准答案
+你是一个资深{position}面试官，需要你根据岗位{level}等级，出一道常识题给面试者，并给出标准答案
+例如：
+question: http状态码304代表什么
+standard_answer: 资源未修改
 """
 
 class PracticeStructuredOutput(BaseModel):
@@ -30,22 +35,20 @@ def examiner(state: TeacherState) -> TeacherState:
         HumanMessage(content="请出一道题")
     ]
 
+    parser = JsonOutputToolsParser()
     model = get_teacher_model().with_structured_output(PracticeStructuredOutput)
-    response = model.invoke(messages)
+    response = model.pipe(parser).invoke(messages)
 
     question = response.question
     standard_answer = response.standard_answer
 
-    messages.append(AIMessage(content=f"""
-    面试题：{question}
-    标准答案：{standard_answer}
-    """))
-
     state["question"] = question
     state["standard_answer"] = standard_answer
-    state["messages"] = state["messages"] + messages
 
-    return state
+    return {
+        "question": question,
+        "standard_answer": standard_answer,
+    }
 
 def collect_answer(state: TeacherState) -> TeacherState:
     """收集用户回答"""

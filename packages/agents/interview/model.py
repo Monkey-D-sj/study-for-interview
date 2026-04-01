@@ -9,5 +9,6 @@ def get_teacher_model():
         model="deepseek-chat",
         base_url=os.getenv("DEEPSEEK_API_BASE"),
         api_key=os.getenv("DEEPSEEK_API_KEY"),
-        temperature=0.5
+        temperature=0.5,
+        streaming=True
     )
