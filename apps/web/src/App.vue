@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
 import { ElInput, ElButton } from 'element-plus'
-import MarkdownIt from 'markdown-it'
+import { marked } from 'marked'
 
 interface Message {
   role: 'user' | 'assistant';
@@ -26,14 +26,6 @@ const scheduleScrollToBottom = () => {
     el.scrollTop = el.scrollHeight
   })
 }
-
-const md = new MarkdownIt({
-  html: false,
-  linkify: true,
-  breaks: true,
-})
-
-const renderMarkdown = (source: string) => md.render(source)
 
 const sendMessage = async () => {
   const trimmed = input.value.trim()
@@ -73,6 +65,8 @@ const sendMessage = async () => {
 
       const decoded = decoder.decode(value)
       const jsonStr = decoded.match(/data: (.*)/)?.[1]
+      console.log(jsonStr);
+      
       if (!jsonStr) continue
 
       const data = JSON.parse(jsonStr)
@@ -108,7 +102,7 @@ const sendMessage = async () => {
             {{ message.role === 'user' ? '你' : 'AI' }}
           </div>
           <div v-if="message.role === 'assistant'" class="msg-content markdown"
-            v-html="renderMarkdown(message.content)" />
+            v-html="marked(message.content)" />
           <div v-else class="msg-content">{{ message.content }}</div>
         </div>
       </div>
