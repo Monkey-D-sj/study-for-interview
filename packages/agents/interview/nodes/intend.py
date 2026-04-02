@@ -72,7 +72,7 @@ def intend_input_node(state: TeacherState):
     if response.level:
         state["level"] = response.level
 
-    return {}
+    return state
 
 def finish_intend(state: TeacherState) -> str:
     if state.get("user_name") and state.get("position") and state.get("level"):

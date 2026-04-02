@@ -1,11 +1,6 @@
-from typing import  Any, Generator
-
-from langchain_core.messages import AIMessage, \
-    AIMessageChunk
 from langchain_core.runnables import RunnableConfig
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
-from langgraph.prebuilt import ToolNode
 from langgraph.types import Checkpointer, Command
 from langgraph.typing import InputT
 
@@ -39,13 +34,15 @@ workflow = StateGraph(TeacherState)
 })
 )
 
+custom_output_nodes = {"examiner"}
+
 def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: str = "", resume: bool = False):
     config: RunnableConfig = {
         "configurable": {
             "thread_id": thread_id
         }
     }
-    print(resume)
+
     teacher_agent = workflow.compile(checkpointer=checkpointer)
 
     # 导出Mermaid代码
@@ -66,18 +63,15 @@ def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: st
     ):
         data = chunk["data"]
         if chunk["type"] == "custom":
-            print('custom', data)
             yield data
         elif chunk["type"] == "messages":
             message_chunk, metadata = data
-            # print(message_chunk, metadata)
-            # print('\n')
-            if isinstance(message_chunk, AIMessageChunk):
-                print(message_chunk)
+            # 跳过自定义输出节点
+            if metadata["langgraph_node"] in custom_output_nodes:
+                continue
             if message_chunk.content:
                 print('messages', message_chunk.content)
                 yield message_chunk.content
-
         else:
             if "__interrupt__" in data:
                 print('interrupt', data["__interrupt__"][0].value)
