@@ -4,19 +4,19 @@ from langgraph.config import get_stream_writer
 from pydantic import BaseModel, Field
 
 from packages.agents.interview.model import get_teacher_model
-from packages.agents.interview.state import TeacherState
+from packages.agents.interview.types import InterviewState
 
 system_prompt = """
-你是一个专业的{position}面试官，负责评估面试候选人的回答。1-10分进行打分
+你是一个专业的{position}面试官，负责评估面试候选人的回答。0-10分进行打分
 问题：{question}
 标准答案：{standard_answer}
 回答：{answer}
 """
 
 class EvaluateResult(BaseModel):
-    score: int = Field(description="评估分数，1-10分")
+    score: int = Field(description="评估分数，0-10分")
 
-def evaluate(state: TeacherState) -> TeacherState:
+def evaluate(state: InterviewState) -> InterviewState:
     """
     评估用户回答
     """
@@ -26,23 +26,17 @@ def evaluate(state: TeacherState) -> TeacherState:
     messages = chat_template.format_messages(position=state["position"],
                                             question=state["question"],
                                             standard_answer=state["standard_answer"],
-                                            answer=state["answer"])  + [ HumanMessage(content="请出一道题") ]
+                                            answer=state["answer"])  + [ HumanMessage(content="请评分") ]
     model = get_teacher_model().with_structured_output(EvaluateResult)
     response = model.invoke(messages)
-    print(response)
-    state["messages"].append(AIMessage(content=f"""
-    评估分数：{response.score}
-    """))
+    score = response.score
+
     writer = get_stream_writer()
-    writer(f"评估分数：{response.score}")
-    state["score"] = response.score
+    writer(f"评估分数：{score}")
+
+    state["score"] = score
+    if score > 6:
+        state["passed_question_count"] += 1
+
     return state
 
-def evaluate_pass(state: TeacherState) -> str:
-    writer = get_stream_writer()
-    if state["score"] >= 6:
-        writer("面试通过")
-        return "pass"
-    else:
-        writer("面试不通过")
-        return "fail"

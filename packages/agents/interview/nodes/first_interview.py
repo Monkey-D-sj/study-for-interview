@@ -7,7 +7,8 @@ from langgraph.types import interrupt
 from pydantic import BaseModel, Field
 
 from packages.agents.interview.model import get_teacher_model
-from packages.agents.interview.state import TeacherState
+from packages.agents.interview.types import InterviewState, \
+    ConditionEnum
 from packages.infra.utils.stream_tag_interceptor import \
     StreamTagInterceptor
 from packages.infra.utils.utils import parse_xml
@@ -29,12 +30,10 @@ http状态码304代表什么
 - 直接返回如例子所示**xml**格式数据
 """
 
-class PracticeStructuredOutput(BaseModel):
-    question: Union[str, Dict, List] = Field(description="面试题")
-    standard_answer: Union[str, Dict, List] = Field(description="标准答案")
-
-def examiner(state: TeacherState) -> TeacherState:
-    """出题"""
+def first_interview(state: InterviewState) -> InterviewState:
+    """
+    第一次面试，根据技术栈出八股文
+    """
     chat_template = ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate.from_template(practice_system_prompt)
     ])
@@ -59,7 +58,6 @@ def examiner(state: TeacherState) -> TeacherState:
             print('visible', visible)
             writer(visible)
 
-    print('fullcontent', full_content)
     question = parse_xml(full_content, QUESTION_TAG)
     standard_answer = parse_xml(full_content, STANDARD_ANSWER_TAG)
 
@@ -68,9 +66,17 @@ def examiner(state: TeacherState) -> TeacherState:
 
     return state
 
-def collect_answer(state: TeacherState) -> TeacherState:
+def collect_answer(state: InterviewState) -> InterviewState:
     """收集用户回答"""
     answer = interrupt("")
     state["answer"] = answer
     state["messages"].append(HumanMessage(content=answer))
     return state
+
+def finish_first_interview(state: InterviewState) -> str:
+    if state["current_count"] < state["question_count"]:
+        return ConditionEnum.LOOP
+    if state["passed_question_count"] / state["question_count"] > 0.6:
+        return ConditionEnum.PASS
+    get_stream_writer()("回去等通知把")
+    return ConditionEnum.FAIL

@@ -4,37 +4,42 @@ from langgraph.graph import StateGraph
 from langgraph.types import Checkpointer, Command
 from langgraph.typing import InputT
 
-from packages.agents.interview.nodes.examiner import \
-    examiner, collect_answer
+from packages.agents.interview.nodes.first_interview import \
+    first_interview, collect_answer, finish_first_interview
 from packages.agents.interview.nodes.intend import \
     intend_node, finish_intend, intend_input_node
 from packages.agents.interview.nodes.evaluate import \
-    evaluate, evaluate_pass
-from packages.agents.interview.state import TeacherState
+    evaluate
+from packages.agents.interview.nodes.second_interview import \
+    second_interview
+from packages.agents.interview.types import InterviewState, \
+    ConditionEnum
 
-workflow = StateGraph(TeacherState)
+workflow = StateGraph(InterviewState)
 
 (workflow
  .add_node(intend_node)
  .add_node(intend_input_node)
- .add_node(examiner)
+ .add_node(first_interview)
+ .add_node(second_interview)
  .add_node(collect_answer)
  .add_node(evaluate)
  .add_edge(START, "intend_node")
  .add_edge("intend_node", "intend_input_node")
  .add_conditional_edges("intend_input_node", finish_intend, {
-    "continue": "examiner",
-    "loop": "intend_node"
+    ConditionEnum.PASS: "first_interview",
+    ConditionEnum.LOOP: "intend_node"
 })
- .add_edge("examiner", "collect_answer")
+ .add_edge("first_interview", "collect_answer")
  .add_edge("collect_answer", "evaluate")
- .add_conditional_edges("evaluate", evaluate_pass, {
-    "pass": END,
-    "fail": "examiner"
+ .add_conditional_edges("evaluate", finish_first_interview, {
+    ConditionEnum.FAIL: END,
+    ConditionEnum.LOOP: "first_interview",
+    ConditionEnum.PASS: "second_interview"
 })
 )
 
-custom_output_nodes = {"examiner"}
+custom_output_nodes = {"first_interview", "evaluate"}
 
 def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: str = "", resume: bool = False):
     config: RunnableConfig = {

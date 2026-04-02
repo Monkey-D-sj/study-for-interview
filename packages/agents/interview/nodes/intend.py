@@ -8,7 +8,8 @@ from langchain_core.messages import SystemMessage, \
 from langgraph.config import get_stream_writer
 
 from packages.agents.interview.model import get_teacher_model
-from packages.agents.interview.state import TeacherState
+from packages.agents.interview.types import InterviewState, \
+    ConditionEnum
 
 intend_system_prompt = """
 你是一个专业的HR，正在引导面试者填写信息。
@@ -24,7 +25,7 @@ intend_system_prompt = """
 - 语气要像真人HR，简洁自然
 """
 
-def intend_node(state: TeacherState) -> TeacherState:
+def intend_node(state: InterviewState) -> InterviewState:
     """
     询问面试者的意图
     """
@@ -52,7 +53,7 @@ class IntendStructuredOutput(BaseModel):
     position: Optional[str] = None
     level: Optional[str] = None
 
-def intend_input_node(state: TeacherState):
+def intend_input_node(state: InterviewState):
     answer = interrupt("")
     prompt = f"""
     请从问题{state["hr_question"]}评估回答{answer}是否是下面三个字段：
@@ -74,10 +75,10 @@ def intend_input_node(state: TeacherState):
 
     return state
 
-def finish_intend(state: TeacherState) -> str:
+def finish_intend(state: InterviewState) -> str:
     if state.get("user_name") and state.get("position") and state.get("level"):
         writer = get_stream_writer()
         writer(f"欢迎{state["user_name"]}来面试{state["position"]}，那我们进入面试流程吧")
-        return "continue"
-    return "loop"
+        return ConditionEnum.PASS
+    return ConditionEnum.LOOP
 
