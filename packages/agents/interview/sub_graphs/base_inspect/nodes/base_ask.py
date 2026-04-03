@@ -10,6 +10,7 @@ from packages.agents.interview.sub_graphs.base_inspect.state import \
 	BaseInspectState, BaseResult
 from packages.agents.interview.types import InterviewState, \
 	ConditionEnum
+from packages.infra.utils.skill_load import SkillLoader
 from packages.infra.utils.stream_tag_interceptor import \
 	StreamTagInterceptor
 from packages.infra.utils.utils import parse_xml
@@ -19,6 +20,7 @@ STANDARD_ANSWER_TAG = 'STANDARDANSWER'
 
 practice_system_prompt = """
 你是一个资深{position}面试官，需要你根据岗位{level}等级，出一道常识题给面试者，并给出标准答案
+可用题库: {bank}
 例如：
 <{QUESTION_TAG}>
 http状态码304代表什么
@@ -31,6 +33,12 @@ http状态码304代表什么
 - 直接返回如例子所示**xml**格式数据
 """
 
+from pathlib import Path
+
+skills_dir = Path("../skills").resolve()
+skill_loader = SkillLoader(skills_dir)
+
+print(skill_loader.get_descriptions())
 
 def base_ask_node(state: BaseInspectState):
 	"""
@@ -43,7 +51,8 @@ def base_ask_node(state: BaseInspectState):
 	messages = chat_template.format_messages(
 		position=state["position"],
 		QUESTION_TAG=QUESTION_TAG,
-		STANDARD_ANSWER_TAG=STANDARD_ANSWER_TAG
+		STANDARD_ANSWER_TAG=STANDARD_ANSWER_TAG,
+		bank=skill_loader.get_descriptions(),
 	)
 
 	model = get_model()

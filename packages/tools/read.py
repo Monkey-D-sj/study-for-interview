@@ -6,7 +6,6 @@ from langchain_core.tools import tool
 ALLOWED_PATHS = [
     Path.cwd(),  # 当前工作目录
     Path.home() / "Documents" / "resumes",  # 指定简历目录
-    Path("/tmp"),  # 临时文件目录
 ]
 
 # 允许的文件扩展名
@@ -67,3 +66,11 @@ def read_file(file_path: str) -> str:
         
     except Exception as e:
         return f"读取失败: {str(e)}"
+
+
+@tool
+def analysis_skill(content: str) -> str:
+    """解析skill内容"""
+
+
+print(read_file.invoke("abc.md"))
