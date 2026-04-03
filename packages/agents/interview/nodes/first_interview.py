@@ -4,9 +4,8 @@ from langchain_core.prompts import ChatPromptTemplate, \
     SystemMessagePromptTemplate
 from langgraph.config import get_stream_writer
 from langgraph.types import interrupt
-from pydantic import BaseModel, Field
 
-from packages.agents.interview.model import get_teacher_model
+from packages.agents.interview.model import get_model
 from packages.agents.interview.types import InterviewState, \
     ConditionEnum
 from packages.infra.utils.stream_tag_interceptor import \
@@ -30,7 +29,7 @@ http状态码304代表什么
 - 直接返回如例子所示**xml**格式数据
 """
 
-def first_interview(state: InterviewState) -> InterviewState:
+def first_interview(state: InterviewState):
     """
     第一次面试，根据技术栈出八股文
     """
@@ -46,7 +45,7 @@ def first_interview(state: InterviewState) -> InterviewState:
         HumanMessage(content="请出一道题")
     ]
 
-    model = get_teacher_model()
+    model = get_model()
     interceptor = StreamTagInterceptor(QUESTION_TAG)
     full_content = ''
     writer = get_stream_writer()
@@ -66,12 +65,12 @@ def first_interview(state: InterviewState) -> InterviewState:
 
     return state
 
-def collect_answer(state: InterviewState) -> InterviewState:
+def collect_answer():
     """收集用户回答"""
     answer = interrupt("")
-    state["answer"] = answer
-    state["messages"].append(HumanMessage(content=answer))
-    return state
+    return {
+        "answer": answer,
+    }
 
 def finish_first_interview(state: InterviewState) -> str:
     if state["current_count"] < state["question_count"]:

@@ -4,7 +4,7 @@ import os
 
 load_dotenv()
 
-def get_teacher_model():
+def get_model():
     return ChatDeepSeek(
         model="deepseek-chat",
         base_url=os.getenv("DEEPSEEK_API_BASE"),

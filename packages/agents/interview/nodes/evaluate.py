@@ -3,7 +3,7 @@ from langchain_core.prompts import SystemMessagePromptTemplate, ChatPromptTempla
 from langgraph.config import get_stream_writer
 from pydantic import BaseModel, Field
 
-from packages.agents.interview.model import get_teacher_model
+from packages.agents.interview.model import get_model
 from packages.agents.interview.types import InterviewState
 
 system_prompt = """
@@ -16,7 +16,7 @@ system_prompt = """
 class EvaluateResult(BaseModel):
     score: int = Field(description="评估分数，0-10分")
 
-def evaluate(state: InterviewState) -> InterviewState:
+def evaluate(state: InterviewState):
     """
     评估用户回答
     """
@@ -27,16 +27,16 @@ def evaluate(state: InterviewState) -> InterviewState:
                                             question=state["question"],
                                             standard_answer=state["standard_answer"],
                                             answer=state["answer"])  + [ HumanMessage(content="请评分") ]
-    model = get_teacher_model().with_structured_output(EvaluateResult)
+    model = get_model().with_structured_output(EvaluateResult)
     response = model.invoke(messages)
     score = response.score
+    passed_question_count = state["passed_question_count"] if score <= 6 else state["passed_question_count"] + 1
 
     writer = get_stream_writer()
     writer(f"评估分数：{score}")
 
-    state["score"] = score
-    if score > 6:
-        state["passed_question_count"] += 1
-
-    return state
+    return {
+        "score": score,
+        "passed_question_count": passed_question_count
+    }
 

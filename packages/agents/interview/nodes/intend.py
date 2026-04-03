@@ -7,7 +7,7 @@ from langchain_core.messages import SystemMessage, \
     HumanMessage, ToolMessage, AIMessage
 from langgraph.config import get_stream_writer
 
-from packages.agents.interview.model import get_teacher_model
+from packages.agents.interview.model import get_model
 from packages.agents.interview.types import InterviewState, \
     ConditionEnum
 
@@ -25,7 +25,7 @@ intend_system_prompt = """
 - 语气要像真人HR，简洁自然
 """
 
-def intend_node(state: InterviewState) -> InterviewState:
+def intend_node(state: InterviewState):
     """
     询问面试者的意图
     """
@@ -40,7 +40,7 @@ def intend_node(state: InterviewState) -> InterviewState:
         HumanMessage(content=context)
     ]
 
-    model = get_teacher_model()
+    model = get_model()
     response = model.invoke(messages)
     question = response.content
 
@@ -62,9 +62,7 @@ def intend_input_node(state: InterviewState):
     3. 面试职级（level）
     如果有返回数据，没有就不返回
     """
-    response = get_teacher_model().with_structured_output(IntendStructuredOutput).invoke([
-        HumanMessage(content=prompt)
-    ])
+    response = get_model().with_structured_output(IntendStructuredOutput).invoke(prompt)
 
     if response.user_name:
         state["user_name"] = response.user_name

@@ -23,6 +23,14 @@ class InterviewState(TypedDict):
     answer: Optional[str] # 用户回答
     score: Optional[int] # 评估分数
 
+    # 第二轮面试
+    second_interview_question: Optional[str] # 第二轮面试问题
+    second_interview_answer: Optional[str] # 第二轮面试答案
+    second_interview_score: Optional[int] # 第二轮面试分数
+
+    # 最终评估
+    final_score: Optional[int] # 最终评估分数
+
     messages: Annotated[List[AnyMessage], add_messages]
 
 class ConditionEnum(str, Enum):

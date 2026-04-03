@@ -4,24 +4,32 @@ from langgraph.graph import StateGraph
 from langgraph.types import Checkpointer, Command
 from langgraph.typing import InputT
 
+from packages.agents.interview.sub_graphs.project_inspect.graph import \
+    project_inspect_sub_graph
 from packages.agents.interview.nodes.first_interview import \
     first_interview, collect_answer, finish_first_interview
 from packages.agents.interview.nodes.intend import \
     intend_node, finish_intend, intend_input_node
 from packages.agents.interview.nodes.evaluate import \
     evaluate
-from packages.agents.interview.nodes.second_interview import \
-    second_interview
 from packages.agents.interview.types import InterviewState, \
     ConditionEnum
 
 workflow = StateGraph(InterviewState)
+def project_inspect_node(state: InterviewState):
+    sub_graph_output = project_inspect_sub_graph({
+        "position": state["position"],
+    })
+    print(sub_graph_output)
+    return {
+        "question": sub_graph_output["question"],
+    }
 
 (workflow
  .add_node(intend_node)
  .add_node(intend_input_node)
+ .add_node(project_inspect_node)
  .add_node(first_interview)
- .add_node(second_interview)
  .add_node(collect_answer)
  .add_node(evaluate)
  .add_edge(START, "intend_node")
@@ -35,7 +43,7 @@ workflow = StateGraph(InterviewState)
  .add_conditional_edges("evaluate", finish_first_interview, {
     ConditionEnum.FAIL: END,
     ConditionEnum.LOOP: "first_interview",
-    ConditionEnum.PASS: "second_interview"
+    ConditionEnum.PASS: "project_inspect_node"
 })
 )
 
