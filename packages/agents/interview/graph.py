@@ -4,20 +4,34 @@ from langgraph.graph import StateGraph
 from langgraph.types import Checkpointer, Command
 from langgraph.typing import InputT
 
+from packages.agents.interview.sub_graphs.base_inspect.graph import \
+    base_inspect_sub_graph
 from packages.agents.interview.sub_graphs.project_inspect.graph import \
     project_inspect_sub_graph
-from packages.agents.interview.nodes.first_interview import \
-    first_interview, collect_answer, finish_first_interview
 from packages.agents.interview.nodes.intend import \
     intend_node, finish_intend, intend_input_node
-from packages.agents.interview.nodes.evaluate import \
-    evaluate
 from packages.agents.interview.types import InterviewState, \
     ConditionEnum
 
 workflow = StateGraph(InterviewState)
+
+def base_inspect_node(state: InterviewState):
+    sub_graph_output = base_inspect_sub_graph.invoke({
+        "position": state["position"],
+    })
+    print(sub_graph_output)
+    return {
+        "base_passed": sub_graph_output["is_passed"],
+    }
+
+def can_go_second_interview(state: InterviewState):
+    if state["base_passed"]:
+        return ConditionEnum.PASS
+    return ConditionEnum.FAIL
+
+
 def project_inspect_node(state: InterviewState):
-    sub_graph_output = project_inspect_sub_graph({
+    sub_graph_output = project_inspect_sub_graph.invoke({
         "position": state["position"],
     })
     print(sub_graph_output)
@@ -28,26 +42,20 @@ def project_inspect_node(state: InterviewState):
 (workflow
  .add_node(intend_node)
  .add_node(intend_input_node)
+ .add_node(base_inspect_node)
  .add_node(project_inspect_node)
- .add_node(first_interview)
- .add_node(collect_answer)
- .add_node(evaluate)
  .add_edge(START, "intend_node")
  .add_edge("intend_node", "intend_input_node")
  .add_conditional_edges("intend_input_node", finish_intend, {
-    ConditionEnum.PASS: "first_interview",
+    ConditionEnum.PASS: "base_inspect_node",
     ConditionEnum.LOOP: "intend_node"
 })
- .add_edge("first_interview", "collect_answer")
- .add_edge("collect_answer", "evaluate")
- .add_conditional_edges("evaluate", finish_first_interview, {
+ .add_conditional_edges("base_inspect_node", can_go_second_interview, {
+    ConditionEnum.PASS: "project_inspect_node",
     ConditionEnum.FAIL: END,
-    ConditionEnum.LOOP: "first_interview",
-    ConditionEnum.PASS: "project_inspect_node"
 })
 )
 
-custom_output_nodes = {"first_interview", "evaluate"}
 
 def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: str = "", resume: bool = False):
     config: RunnableConfig = {
@@ -79,9 +87,6 @@ def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: st
             yield data
         elif chunk["type"] == "messages":
             message_chunk, metadata = data
-            # 跳过自定义输出节点
-            if metadata["langgraph_node"] in custom_output_nodes:
-                continue
             if message_chunk.content:
                 print('messages', message_chunk.content)
                 yield message_chunk.content

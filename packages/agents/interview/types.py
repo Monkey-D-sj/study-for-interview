@@ -13,15 +13,7 @@ class InterviewState(TypedDict):
     tech_stack: Optional[str] # 技术栈
 
     # 第一轮面试
-    question_count: int # 轮数
-    current_count: int # 当前轮数
-    passed_question_count: int # 通过数
-
-
-    question: Optional[str] # 问题
-    standard_answer: Optional[str] # 标准答案
-    answer: Optional[str] # 用户回答
-    score: Optional[int] # 评估分数
+    base_passed: bool # 是否通过第一轮面试
 
     # 第二轮面试
     second_interview_question: Optional[str] # 第二轮面试问题

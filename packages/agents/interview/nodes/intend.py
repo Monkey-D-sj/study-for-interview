@@ -1,10 +1,9 @@
-import json
 from typing import Optional
 
 from langgraph.types import interrupt
-from pydantic import Field, BaseModel
+from pydantic import BaseModel
 from langchain_core.messages import SystemMessage, \
-    HumanMessage, ToolMessage, AIMessage
+    HumanMessage
 from langgraph.config import get_stream_writer
 
 from packages.agents.interview.model import get_model
