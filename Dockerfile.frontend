@@ -1,0 +1,22 @@
+# Dockerfile.frontend
+FROM node:20-alpine AS dev
+
+# 安装pnpm
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+# 复制前端依赖文件
+COPY apps/web/package.json apps/web/pnpm-lock.yaml* ./
+
+# 安装依赖
+RUN pnpm install
+
+# 复制前端源代码
+COPY apps/web/ .
+
+# 暴露端口
+EXPOSE 5173
+
+# 开发服务器命令
+CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"]
