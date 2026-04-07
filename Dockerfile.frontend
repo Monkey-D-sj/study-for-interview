@@ -1,15 +1,8 @@
 # Dockerfile.frontend
-FROM node:20-alpine AS dev
+FROM node:20.20-slim AS dev
 
 # 安装pnpm
 RUN npm install -g pnpm
-
-# 安装curl用于健康检查
-RUN apk add --no-cache curl
-
-# 创建非root用户
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 -G nodejs
 
 WORKDIR /app
 
@@ -27,18 +20,8 @@ RUN pnpm install --frozen-lockfile
 # 复制前端源代码
 COPY apps/web/ .
 
-# 更改文件所有权
-RUN chown -R nodejs:nodejs /app
-
-# 切换到非root用户
-USER nodejs
-
 # 暴露端口
 EXPOSE 5173
-
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5173 || exit 1
 
 # 开发服务器命令
 CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"]

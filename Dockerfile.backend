@@ -10,14 +10,6 @@ COPY requirements.txt ./
 # 安装依赖到临时目录
 RUN pip install --user --no-cache-dir -r requirements.txt
 
-# 第二阶段：运行环境
-FROM python:3.13-slim
-
-WORKDIR /app
-
-# 创建非root用户
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-
 # 安装必要的系统依赖
 # pymupdf可能需要一些库，但gcc可能不需要
 RUN apt-get update && apt-get install -y \
@@ -32,9 +24,6 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# 从 builder 复制已安装的依赖到全局位置
-COPY --from=builder /root/.local /usr/local
-
 # 只复制必要的应用文件
 COPY apps/ ./apps/
 COPY requirements.txt ./
@@ -43,23 +32,15 @@ COPY pyproject.toml ./
 COPY .env.example ./
 
 # 创建数据目录并设置权限
-RUN mkdir -p /app/data/db && \
-    chown -R appuser:appuser /app
+RUN mkdir -p /app/data/db
 
 # 确保 PATH 包含全局安装的包
 ENV PATH=/usr/local/bin:$PATH \
     PYTHONPATH=/app \
     PYTHONUNBUFFERED=1
 
-# 切换到非root用户
-USER appuser
-
 # 暴露端口
 EXPOSE 8000
-
-# 健康检查 - 使用/health端点
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # 启动命令（开发模式带热重载）
 CMD ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

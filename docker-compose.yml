@@ -22,7 +22,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: Dockerfile.frontend
     container_name: interview-web
     ports:
       - "80:80"
@@ -34,12 +34,28 @@ services:
 
   # Redis 服务
   redis:
-    image: redis:7-alpine
+    image: redis/redis-stack:latest
     container_name: interview-redis
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # pgsql
+  db:
+    image: postgres:16-alpine
+    container_name: interview-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=interview
     networks:
       - app-network
     restart: unless-stopped
@@ -50,3 +66,4 @@ networks:
 
 volumes:
   redis-data:
+  db-data:
