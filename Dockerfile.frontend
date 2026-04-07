@@ -24,4 +24,4 @@ COPY apps/web/ .
 EXPOSE 5173
 
 # 开发服务器命令
-CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["npx", "vite", "--host", "0.0.0.0"]
