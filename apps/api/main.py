@@ -28,3 +28,13 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root():
+    return {"message": "Interview API is running"}
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "interview-api"}
+
+

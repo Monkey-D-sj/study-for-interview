@@ -32,8 +32,8 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# 从 builder 复制已安装的依赖
-COPY --from=builder /root/.local /root/.local
+# 从 builder 复制已安装的依赖到全局位置
+COPY --from=builder /root/.local /usr/local
 
 # 只复制必要的应用文件
 COPY apps/ ./apps/
@@ -46,8 +46,8 @@ COPY .env.example ./
 RUN mkdir -p /app/data/db && \
     chown -R appuser:appuser /app
 
-# 确保 PATH 包含用户安装的包
-ENV PATH=/root/.local/bin:$PATH \
+# 确保 PATH 包含全局安装的包
+ENV PATH=/usr/local/bin:$PATH \
     PYTHONPATH=/app \
     PYTHONUNBUFFERED=1
 
@@ -57,9 +57,9 @@ USER appuser
 # 暴露端口
 EXPOSE 8000
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')" || exit 1
+# 健康检查 - 使用/health端点
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # 启动命令（开发模式带热重载）
 CMD ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

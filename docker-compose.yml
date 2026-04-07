@@ -1,0 +1,52 @@
+services:
+  # FastAPI 后端服务
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: interview-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
+    networks:
+      - app-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Vue 前端服务
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: interview-web
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # Redis 服务
+  redis:
+    image: redis:7-alpine
+    container_name: interview-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis-data:
