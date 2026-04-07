@@ -5,7 +5,7 @@ FROM python:3.13-slim AS builder
 WORKDIR /app
 
 # 复制依赖文件
-COPY pyproject.toml uv.lock ./
+COPY requirements.txt ./
 
 # 安装依赖到临时目录
 RUN pip install --user --no-cache-dir -r requirements.txt
