@@ -51,4 +51,5 @@ temp/
 
 # Docker
 Dockerfile*
+!Dockerfile.frontend
 docker-compose*.yml
