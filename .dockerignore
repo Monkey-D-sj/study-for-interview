@@ -1,0 +1,54 @@
+# 依赖目录
+node_modules/
+**/node_modules/
+
+# 构建输出
+dist/
+**/dist/
+.output/
+**/.output/
+build/
+**/build/
+
+# 环境文件
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*
+**/.env*
+.envrc
+
+# IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 测试文件
+coverage/
+**/coverage/
+*.spec.js
+*.test.js
+
+# 临时文件
+tmp/
+temp/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
