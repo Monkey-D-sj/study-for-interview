@@ -15,27 +15,51 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
-# 安装系统依赖（如需要）
+# 创建非root用户
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# 安装必要的系统依赖
+# pymupdf可能需要一些库，但gcc可能不需要
 RUN apt-get update && apt-get install -y \
-    gcc \
+    # 可能需要的库，根据实际需要调整
+    libfreetype6 \
+    libjpeg62-turbo \
+    libpng16-16 \
+    libxcb1 \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # 从 builder 复制已安装的依赖
 COPY --from=builder /root/.local /root/.local
 
-# 复制应用代码
-COPY . .
+# 只复制必要的应用文件
+COPY apps/ ./apps/
+COPY requirements.txt ./
+COPY main.py ./
+COPY pyproject.toml ./
+COPY .env.example ./
 
 # 创建数据目录并设置权限
-RUN mkdir -p /app/data/db
+RUN mkdir -p /app/data/db && \
+    chown -R appuser:appuser /app
 
 # 确保 PATH 包含用户安装的包
 ENV PATH=/root/.local/bin:$PATH \
     PYTHONPATH=/app \
     PYTHONUNBUFFERED=1
 
+# 切换到非root用户
+USER appuser
+
 # 暴露端口
 EXPOSE 8000
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')" || exit 1
 
 # 启动命令（开发模式带热重载）
 CMD ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
