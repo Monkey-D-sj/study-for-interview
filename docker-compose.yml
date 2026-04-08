@@ -7,6 +7,13 @@ services:
     container_name: interview-api
     ports:
       - "8000:8000"
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+      - ./requirements.txt:/app/requirements.txt
+      - ./main.py:/app/main.py
+      - ./pyproject.toml:/app/pyproject.toml
+      - .env:/app/.env
     environment:
       - ENVIRONMENT=development
       - REDIS_URL=redis://redis:6379
@@ -16,6 +23,7 @@ services:
       - app-network
     depends_on:
       - redis
+      - db
     restart: unless-stopped
 
   # Vue 前端服务

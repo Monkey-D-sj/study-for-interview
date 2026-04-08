@@ -1,8 +1,4 @@
-from turtle import position
 from typing import TypedDict
-
-from pydantic import BaseModel
-
 
 class ProjectInspectState(TypedDict):
 	position: str # 职位

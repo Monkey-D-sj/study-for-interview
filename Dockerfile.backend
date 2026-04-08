@@ -24,13 +24,6 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# 只复制必要的应用文件
-COPY apps/ ./apps/
-COPY requirements.txt ./
-COPY main.py ./
-COPY pyproject.toml ./
-COPY .env.example ./
-
 # 创建数据目录并设置权限
 RUN mkdir -p /app/data/db
 
@@ -43,4 +36,4 @@ ENV PATH=/usr/local/bin:$PATH \
 EXPOSE 8000
 
 # 启动命令（开发模式带热重载）
-CMD ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
