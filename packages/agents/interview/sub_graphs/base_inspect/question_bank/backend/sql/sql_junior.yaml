@@ -1,0 +1,19 @@
+question1:
+  - SQL 中 SELECT * 和 SELECT column_name 有什么区别？
+  - SELECT * 返回所有列，SELECT column_name 只返回指定列；SELECT * 可能读取更多数据，性能相对较差
+
+question2:
+  - SQL 中的 GROUP BY 语句有什么作用？
+  - GROUP BY 用于将结果集按照一个或多个列进行分组，通常与聚合函数（COUNT, SUM, AVG等）一起使用
+
+question3:
+  - 什么是 SQL 注入？如何防止？
+  - SQL 注入是通过输入恶意 SQL 代码来攻击数据库的方式；防止方法：使用参数化查询、ORM框架、输入验证等
+
+question4:
+  - INNER JOIN 和 LEFT JOIN 有什么区别？
+  - INNER JOIN 只返回两个表中匹配的行；LEFT JOIN 返回左表所有行，右表不匹配的列填充 NULL
+
+question5:
+  - 索引的作用是什么？什么情况下索引会失效？
+  - 索引提高查询速度；失效情况：在索引列上使用函数、LIKE 以通配符开头、类型转换、OR 条件等

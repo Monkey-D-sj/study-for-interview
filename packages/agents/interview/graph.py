@@ -18,6 +18,8 @@ workflow = StateGraph(InterviewState)
 def base_inspect_node(state: InterviewState):
     sub_graph_output = base_inspect_sub_graph.invoke({
         "position": state["position"],
+        "level": state.get("level", "junior"),
+        "used_question_ids": [],  # 初始化已出题ID列表
     })
     print(sub_graph_output)
     return {

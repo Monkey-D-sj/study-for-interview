@@ -19,6 +19,18 @@ system_prompt = """
 class EvaluateResult(BaseModel):
 	score: int = Field(description="评估分数，0-10分")
 
+def save_exam_question(question: str, answer: str, standard_answer: str, score: int):
+	"""
+	保存评分低的考试问题
+	Args:
+		question: 问题
+		answer: 回复
+		standard_answer: 标准答案
+		score: 评分
+	"""
+	with open('exam_questions.jsonl', 'a', encoding="utf-8") as f:
+		f.write(f'{{question: "{question}", answer: "{answer}", standard_answer: "{standard_answer}", score: "{score}"}}\n')
+
 def analyze_base_node(state: BaseInspectState):
 	"""
 	评估用户回答
@@ -27,10 +39,14 @@ def analyze_base_node(state: BaseInspectState):
 		SystemMessagePromptTemplate.from_template(system_prompt)
 	])
 	last_result = state["results"][-1]
+	question = last_result["question"]
+	standard_answer = last_result["standard_answer"]
+	answer = last_result["answer"]
+
 	messages = chat_template.format_messages(position=state["position"],
-											question=last_result["question"],
-											standard_answer=last_result["standard_answer"],
-											answer=last_result["answer"])
+											question=question,
+											standard_answer=standard_answer,
+											answer=answer)
 	model = get_model().with_structured_output(EvaluateResult)
 	response = model.invoke(messages)
 	score = response.score
@@ -39,6 +55,9 @@ def analyze_base_node(state: BaseInspectState):
 	writer = get_stream_writer()
 	writer(f"评估分数：{score}")
 	state["results"][-1]["score"] = score
+
+	if score < 6:
+		save_exam_question(question=question, standard_answer=standard_answer, score=score, answer=answer)
 
 	return {
 		"passed_question_count": passed_question_count
