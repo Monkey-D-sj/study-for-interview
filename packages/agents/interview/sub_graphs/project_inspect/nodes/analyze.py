@@ -1,6 +1,4 @@
 from typing import List
-
-from langchain_core.messages import SystemMessage
 from pydantic import BaseModel, Field
 
 from packages.agents.interview.model import get_model

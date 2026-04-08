@@ -19,7 +19,6 @@ def base_inspect_node(state: InterviewState):
     sub_graph_output = base_inspect_sub_graph.invoke({
         "position": state["position"],
         "level": state.get("level", "junior"),
-        "used_question_ids": [],  # 初始化已出题ID列表
     })
     print(sub_graph_output)
     return {
@@ -59,17 +58,17 @@ def project_inspect_node(state: InterviewState):
 )
 
 
-def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: str = "", resume: bool = False):
+def run_interview_agent(user_input: str, checkpointer: Checkpointer, thread_id: str = "", resume: bool = False):
     config: RunnableConfig = {
         "configurable": {
             "thread_id": thread_id
         }
     }
 
-    teacher_agent = workflow.compile(checkpointer=checkpointer)
+    interview_agent = workflow.compile(checkpointer=checkpointer)
 
     # 导出Mermaid代码
-    mermaid_code = teacher_agent.get_graph().draw_mermaid()
+    mermaid_code = interview_agent.get_graph().draw_mermaid()
     # 保存到文件
     with open("graph.mmd", "w") as f:
         f.write(mermaid_code)
@@ -78,7 +77,7 @@ def run_teacher_agent(user_input: str, checkpointer: Checkpointer, thread_id: st
         "user_input": user_input
     }) if resume else {"user_input": user_input}
 
-    for chunk in teacher_agent.stream(
+    for chunk in interview_agent.stream(
             agent_input,
             config=config,
             stream_mode=["updates", "custom", "messages"],

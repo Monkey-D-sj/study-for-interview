@@ -16,7 +16,7 @@ workflow = StateGraph(BaseInspectState)
 (workflow.add_node(base_ask_node)
  .add_node(user_input_node)
  .add_node(analyze_base_node)
- .add_edge(START, "analyze_base_node")
+ .add_edge(START, "base_ask_node")
  .add_edge("base_ask_node", "user_input_node")
  .add_edge("user_input_node", "analyze_base_node")
  .add_conditional_edges("analyze_base_node", is_passed, {

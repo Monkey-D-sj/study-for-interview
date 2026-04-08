@@ -4,12 +4,14 @@ from typing import TypedDict, Literal, List, Annotated, \
 from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage
 
+Level: TypeAlias = Literal["beginner", "intermediate", "advanced"]
+
 class InterviewState(TypedDict):
     user_input: Annotated[str, lambda x, y: y] # 用户输入
     hr_question: Optional[str] # hr问题
     user_name: Optional[str] # 用户姓名
     position: Optional[str] # 用户职位
-    level: Literal["beginner", "intermediate", "advanced"]
+    level: Level
     tech_stack: Optional[str] # 技术栈
 
     # 第一轮面试

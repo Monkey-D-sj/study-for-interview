@@ -1,7 +1,7 @@
 from langgraph.config import get_stream_writer
 
 from packages.agents.interview.sub_graphs.base_inspect.state import \
-	BaseInspectState, BaseResult
+	BaseInspectState
 
 # 岗位到题库的映射
 POSITION_TO_BANK = {
@@ -74,24 +74,16 @@ def base_ask_node(state: BaseInspectState):
 		q = questions[0]
 		question_text = q["question"]
 
-		# 流式输出问题（模拟打字效果）
-		for char in question_text:
-			writer(char)
+		writer(question_text)
 
-		# 返回结果
-		result: BaseResult = {
-			"id": q["id"],
-			"question": q["question"],
-			"standard_answer": q["standard_answer"],
-			"answer": "",
-			"score": None
-		}
 
 		# 更新已出题ID列表
 		new_used_ids = [q["id"]]
 
 		return {
-			"results": [result],
+			"id": q["id"],
+			"question": q["question"],
+			"standard_answer": q["standard_answer"],
 			"used_question_ids": new_used_ids
 		}
 

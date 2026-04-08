@@ -38,10 +38,10 @@ def analyze_base_node(state: BaseInspectState):
 	chat_template = ChatPromptTemplate.from_messages([
 		SystemMessagePromptTemplate.from_template(system_prompt)
 	])
-	last_result = state["results"][-1]
-	question = last_result["question"]
-	standard_answer = last_result["standard_answer"]
-	answer = last_result["answer"]
+
+	question = state["question"]
+	standard_answer = state["standard_answer"]
+	answer = state["answer"]
 
 	messages = chat_template.format_messages(position=state["position"],
 											question=question,
@@ -50,17 +50,19 @@ def analyze_base_node(state: BaseInspectState):
 	model = get_model().with_structured_output(EvaluateResult)
 	response = model.invoke(messages)
 	score = response.score
-	passed_question_count = state["passed_question_count"] if score <= 6 else state["passed_question_count"] + 1
+	passed_question_count = state["passed_question_count"]
 
 	writer = get_stream_writer()
 	writer(f"评估分数：{score}")
-	state["results"][-1]["score"] = score
 
 	if score < 6:
 		save_exam_question(question=question, standard_answer=standard_answer, score=score, answer=answer)
+	else:
+		passed_question_count += 1
 
 	return {
-		"passed_question_count": passed_question_count
+		"passed_question_count": passed_question_count,
+		"score": score
 	}
 
 def is_passed(state: BaseInspectState):
