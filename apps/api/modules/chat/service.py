@@ -3,7 +3,7 @@ import uuid
 from fastapi.sse import ServerSentEvent
 from langgraph.types import Checkpointer
 
-from packages.agents.interview.graph import run_teacher_agent
+from packages.agents.interview.graph import run_interview_agent
 
 
 class ChatService:
@@ -17,7 +17,7 @@ class ChatService:
 		if session_id is None:
 			session_id = str(uuid.uuid4())
 
-		for chunk in run_teacher_agent(
+		for chunk in run_interview_agent(
 			user_input,
 			self.checkpointer,
 			session_id,

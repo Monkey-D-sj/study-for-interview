@@ -1,6 +1,7 @@
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
+from langgraph.types import Command
 
 from packages.agents.interview.sub_graphs.project_inspect.nodes.analyze import \
  analyze_node, finish_node
@@ -22,11 +23,30 @@ workflow = StateGraph(ProjectInspectState)
  .add_edge("project_ask_node", "ask_answer_node")
  .add_edge("ask_answer_node", "analyze_node")
  .add_conditional_edges("analyze_node", finish_node, {
-    ConditionEnum.LOOP: "ask_detail_node",
-    ConditionEnum.PASS: END
+	ConditionEnum.LOOP: "ask_detail_node",
+	ConditionEnum.PASS: END
  })
  .add_edge("ask_detail_node", "ask_answer_node")
  )
 
 checkpointer = InMemorySaver()
 project_inspect_sub_graph = workflow.compile(checkpointer=checkpointer)
+
+
+config = {
+ "configurable": {
+  "thread_id": "1234"
+ }
+}
+response = project_inspect_sub_graph.invoke(
+		{"position": "后端", "level": "1-3年"},
+		config=config
+)
+
+while response:
+	if "__interrupt__" in response:
+		answer = input(response["__interrupt__"][0].value + '\n' + '请输入：')
+		response = project_inspect_sub_graph.invoke(
+				Command(resume=answer),
+				config=config
+		)

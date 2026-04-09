@@ -5,7 +5,7 @@ from packages.agents.interview.sub_graphs.project_inspect.state import \
 
 
 def ask_answer_node(state: ProjectInspectState):
-    answer = interrupt("")
-    return {
-        "answer": answer,
-    }
+	answer = interrupt(state["question"])
+	return {
+		"answer": answer,
+	}

@@ -10,13 +10,9 @@ def project_ask_node(state: ProjectInspectState):
     要求：
     - 必须包含：项目背景、技术架构、你的职责、核心难点
     """
-    writer = get_stream_writer()
-    writer(question)
-    answer = interrupt("")
 
     return {
         "question": question,
-        "answer": answer,
         "dialogue_loop": 0,
     }
 
