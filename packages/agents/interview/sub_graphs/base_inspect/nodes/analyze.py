@@ -1,13 +1,11 @@
-from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import SystemMessagePromptTemplate, ChatPromptTemplate
 from langgraph.config import get_stream_writer
 from pydantic import BaseModel, Field
 
-from packages.agents.interview.model import get_model
+from packages.infra.models.model import get_model
 from packages.agents.interview.sub_graphs.base_inspect.state import \
 	BaseInspectState
-from packages.agents.interview.types import InterviewState, \
-	ConditionEnum
+from packages.agents.interview.types import ConditionEnum
 
 system_prompt = """
 你是一个专业的{position}面试官，负责评估面试候选人的回答。0-10分进行打分

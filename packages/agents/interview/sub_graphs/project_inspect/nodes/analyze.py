@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel, Field
 
-from packages.agents.interview.model import get_model
+from packages.infra.models.model import get_model
 from packages.agents.interview.sub_graphs.project_inspect.state import \
 	ProjectInspectState
 from packages.agents.interview.types import ConditionEnum

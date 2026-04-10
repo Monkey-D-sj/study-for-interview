@@ -1,4 +1,4 @@
-from packages.agents.interview.model import get_model
+from packages.infra.models.model import get_model
 from packages.agents.interview.sub_graphs.project_inspect.state import \
 	ProjectInspectState
 

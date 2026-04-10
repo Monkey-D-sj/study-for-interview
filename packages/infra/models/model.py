@@ -12,3 +12,12 @@ def get_model():
         temperature=0.5,
         streaming=True
     )
+
+def get_light_model():
+    return ChatDeepSeek(
+        model="deepseek-chat",
+        base_url=os.getenv("DEEPSEEK_API_BASE"),
+        api_key=os.getenv("DEEPSEEK_API_KEY"),
+        temperature=0.5,
+        streaming=True
+    )

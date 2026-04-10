@@ -6,7 +6,7 @@ from langchain_core.messages import SystemMessage, \
     HumanMessage
 from langgraph.config import get_stream_writer
 
-from packages.agents.interview.model import get_model
+from packages.infra.models.model import get_model
 from packages.agents.interview.types import InterviewState, \
     ConditionEnum
 
