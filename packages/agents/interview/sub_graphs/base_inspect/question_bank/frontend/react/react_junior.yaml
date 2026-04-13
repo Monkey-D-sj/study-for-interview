@@ -1,0 +1,19 @@
+question1:
+  - React 中受控组件和非受控组件有什么区别？
+  - 受控组件的值由 React state 控制；非受控组件的值由 DOM 管理，用 ref 获取
+
+question2:
+  - useState 和 useEffect 有什么作用？
+  - useState 用于在函数组件中添加状态；useEffect 用于处理副作用，替代 componentDidMount、componentDidUpdate 等
+
+question3:
+  - React 的虚拟 DOM 是什么？有什么优势？
+  - 虚拟 DOM 是真实 DOM 的 JS 对象表示；优势：减少直接操作 DOM 的性能开销，通过 diff 算法最小化更新
+
+question4:
+  - 什么是 props？如何传递 props？
+  - props 是父组件传递给子组件的数据；通过组件属性传递，子组件通过函数参数接收
+
+question5:
+  - React 组件的生命周期有哪些？
+  - 挂载：constructor、componentDidMount；更新：shouldComponentUpdate、componentDidUpdate；卸载：componentWillUnmount

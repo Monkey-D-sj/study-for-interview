@@ -1,0 +1,19 @@
+question1:
+  - 解释一下原型链是什么？如何实现继承？
+  - 原型链是对象通过 __proto__ 链接到其原型，最终指向 null；继承方式：原型链继承、构造函数继承、组合继承、ES6 class extends
+
+question2:
+  - Promise 是什么？async/await 与 Promise 有什么区别？
+  - Promise 是解决异步编程的方案；async/await 是 Promise 的语法糖，让异步代码看起来像同步代码，更易读易维护
+
+question3:
+  - 什么是事件循环（Event Loop）？宏任务和微任务有什么区别？
+  - 事件循环是 JS 的异步执行机制；微任务优先级高于宏任务，微任务队列清空后执行一个宏任务
+
+question4:
+  - 深拷贝和浅拷贝有什么区别？如何实现深拷贝？
+  - 浅拷贝只复制引用，深拷贝递归复制所有属性；实现方法：JSON.parse(JSON.stringify())、递归函数、lodash.cloneDeep 等
+
+question5:
+  - 什么是防抖和节流？分别适用于什么场景？
+  - 防抖是延迟执行，多次触发只执行最后一次；节流是固定时间间隔执行；防抖适用搜索框，节流适用滚动、resize 事件

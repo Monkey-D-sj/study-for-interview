@@ -1,0 +1,19 @@
+question1:
+  - Python 中列表和元组有什么区别？
+  - 列表是可变的，用方括号 []；元组是不可变的，用圆括号 ()，性能更好
+
+question2:
+  - 什么是装饰器（Decorator）？如何定义装饰器？
+  - 装饰器是修改函数或类功能的函数；定义方式：def decorator(func): return wrapper 或使用 @ 符号
+
+question3:
+  - Python 的 GIL 是什么？对多线程有什么影响？
+  - GIL 是全局解释器锁，同一时刻只有一个线程执行 Python 字节码；CPU 密集型任务多线程无法并行，I/O 密集型可以用
+
+question4:
+  - 什么是列表推导式？请举一个例子
+  - 列表推导式是用简洁方式创建列表；例：[x*2 for x in range(5)] 生成 [0, 2, 4, 6, 8]
+
+question5:
+  - Python 中的 __init__ 和 __new__ 有什么区别？
+  - __init__ 是初始化方法，创建实例后调用；__new__ 是创建实例的方法，控制实例的创建过程

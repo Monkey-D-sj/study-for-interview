@@ -1,0 +1,19 @@
+question1:
+  - V8 垃圾回收机制是怎样的？
+  - V8 使用分代回收：新生代用 Scavenge 算法（复制算法），老生代用标记-清除和标记-整理，还有增量标记和并发回收
+
+question2:
+  - 如何实现一个 Promise？请描述 Promise 的状态转换
+  - Promise 有三种状态：pending、fulfilled、rejected，状态不可逆；实现需要 then 链式调用、异步执行、错误冒泡等
+
+question3:
+  - Web Worker 是什么？什么时候使用？
+  - Web Worker 在独立线程运行 JS，不阻塞主线程；适用于 CPU 密集型任务，避免页面卡顿
+
+question4:
+  - 什么是内存泄漏？常见场景有哪些？
+  - 内存泄漏是程序无法释放已分配的内存；常见场景：意外的全局变量、闭包引用、DOM 引用未清理、定时器未清除
+
+question5:
+  - 如何优化 JavaScript 性能？
+  - 减少不必要的计算、使用节流防抖、避免深层递归、使用事件委托、合理使用缓存、使用 Web Worker、避免 DOM 操作频繁

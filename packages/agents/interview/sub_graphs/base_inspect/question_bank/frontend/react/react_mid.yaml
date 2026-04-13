@@ -1,0 +1,19 @@
+question1:
+  - useEffect 的依赖数组是什么？如何正确使用？
+  - 依赖数组控制 effect 执行时机，只有依赖变化时才执行；空数组只执行一次，不传数组每次渲染都执行
+
+question2:
+  - 什么是 React 上下文（Context）？什么时候使用？
+  - Context 用于跨层级传递数据，避免 props 层层传递；适用于主题、用户信息等全局状态
+
+question3:
+  - useMemo 和 useCallback 有什么区别？
+  - useMemo 缓存计算结果，useCallback 缓存函数引用；useCallback 是 useMemo 返回函数的特例
+
+question4:
+  - React 的 diff 算法是怎样的？
+  - React 使用同层比较，key 作为唯一标识；同层级按 key 或索引比较，不同层级直接替换，O(n) 复杂度
+
+question5:
+  - 什么是 React Fiber？解决了什么问题？
+  - Fiber 是 React 16 的协调算法重构；解决了递归导致主线程阻塞的问题，支持时间切片和任务中断

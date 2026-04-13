@@ -1,0 +1,19 @@
+question1:
+  - 什么是 BFC？如何触发 BFC？
+  - BFC 是块级格式化上下文，独立的渲染区域；触发方式：overflow: hidden、display: flex、position: absolute、float 等
+
+question2:
+  - Flex 布局中 justify-content 和 align-items 有什么区别？
+  - justify-content 控制主轴对齐；align-items 控制交叉轴对齐
+
+question3:
+  - CSS 动画和过渡有什么区别？
+  - transition 是属性值变化的过渡效果，需要触发条件；animation 是关键帧动画，可以自动执行，功能更丰富
+
+question4:
+  - 什么是 CSS 预处理器？常用的有哪些？
+  - 预处理器扩展了 CSS，支持变量、嵌套、函数等；常用：Sass、Less、Stylus
+
+question5:
+  - 响应式设计有哪些实现方式？
+  - 媒体查询（@media）、相对单位（rem、vw、vh）、flex/grid 布局、CSS 变量、picture 元素

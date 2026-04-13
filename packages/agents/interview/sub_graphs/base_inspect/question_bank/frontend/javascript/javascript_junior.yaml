@@ -1,0 +1,19 @@
+question1:
+  - JavaScript 中 let、const 和 var 有什么区别？
+  - var 有变量提升，作用域为函数作用域；let 和 const 是块级作用域，let 可重新赋值，const 声明后不可重新赋值
+
+question2:
+  - 什么是闭包？闭包有什么用途？
+  - 闭包是函数和其词法环境的组合；用途：数据私有化、柯里化、模块化、防抖节流等
+
+question3:
+  - call、apply 和 bind 的作用和区别是什么？
+  - call 和 apply 立即调用函数并改变 this 指向；bind 返回一个新函数；call 传参数列表，apply 传参数数组
+
+question4:
+  - 什么是事件冒泡和事件捕获？如何阻止事件冒泡？
+  - 事件冒泡是从目标元素向上传播到文档根；事件捕获是从根向下传播；用 event.stopPropagation() 阻止冒泡
+
+question5:
+  - JavaScript 的基本数据类型有哪些？
+  - null、undefined、boolean、number、string、bigint、symbol；引用类型有 object（包括 array、function、date 等）

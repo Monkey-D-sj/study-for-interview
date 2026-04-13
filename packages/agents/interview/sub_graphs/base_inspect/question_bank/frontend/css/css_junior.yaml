@@ -1,0 +1,19 @@
+question1:
+  - CSS 中 id 选择器、类选择器和标签选择器的优先级有什么区别？
+  - id 选择器优先级最高，类选择器次之，标签选择器最低；!important 可以覆盖所有优先级
+
+question2:
+  - 盒子模型中 content-box 和 border-box 有什么区别？
+  - content-box 宽高不包括 padding 和 border；border-box 宽高包括 padding 和 border
+
+question3:
+  - CSS 中 position 的值有哪些？分别有什么作用？
+  - static：默认定位；relative：相对自身定位；absolute：相对最近定位祖先定位；fixed：相对视口定位；sticky：滚动粘性定位
+
+question4:
+  - display: flex 和 display: block 有什么区别？
+  - flex 是弹性盒布局，子元素可横向或纵向排列，支持对齐和空间分配；block 是块级元素，独占一行
+
+question5:
+  - CSS 中 margin 和 padding 有什么区别？
+  - margin 是外边距，控制元素与元素之间的距离；padding 是内边距，控制内容与边框的距离
